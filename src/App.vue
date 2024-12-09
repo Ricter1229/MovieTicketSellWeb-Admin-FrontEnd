@@ -1,85 +1,53 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+	<div class="layout" >
+		<header :style="{ paddingBottom: navbarHeight + 'px' }">
+			<Navigationbar class="navbar" @updateHeight="updateNavbarHeight" ></Navigationbar>
+		</header>
+		<div class="content" >
+			<RouterView></RouterView>
+		</div>
+	</div>
 </template>
+
+<script setup>
+	import 'bootstrap/dist/css/bootstrap.min.css'
+	import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+	
+	
+	import Navigationbar from './components/Navigationbar.vue';
+
+	import { ref } from 'vue';
+
+	const navbarHeight = ref(0);// 儲存 Navigationbar 的高度
+	
+	const updateNavbarHeight = (height) => {
+		navbarHeight.value = height;
+	};
+</script>
 
 <style scoped>
 header {
-  line-height: 1.5;
-  max-height: 100vh;
+	display: block; /* 确保 header 可见 */
+	position: relative; /* 避免被 position 相关设置影响 */
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+/* 使用 Flexbox 布局 */
+.layout {
+	display: flex;
+	flex-direction: column;
+	height: 100vh; /* 讓內容滿屏 */
+	overflow: hidden;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.navbar {
+	flex-shrink: 0; /* 固定高度，避免壓縮 */
+	z-index: 10; /* 確保 Navbar 在最上層 */
+	box-sizing: border-box;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.content {
+	flex-grow: 1; /* 填充剩餘空間 */	
+	height: 100vh;
+    overflow-y: auto; /* 整个页面滚动 */
 }
 </style>
