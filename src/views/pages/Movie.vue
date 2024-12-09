@@ -54,7 +54,7 @@
     import {ref , onMounted} from 'vue'
     import { useRoute } from 'vue-router';
     import Swal from 'sweetalert2';
-    import axiosapi from '@/utils/axiosInstance.js';
+    import axiosapi from '@/plugins/axios';
     import MovieCard from '@/components/MovieCard.vue';
     import MovieSelect from '@/components/MovieSelect.vue';
     import MovieModal from '@/components/MovieModal.vue';
@@ -76,11 +76,14 @@
     const movieModalRef = ref(null);
     const isShowInsertButton = ref(true);
     function openModal(action, id) {
+        console.log(id);
+        
         if(action==="insert") {
             isShowInsertButton.value = true;
             movie.value = {};
         } else {
             isShowInsertButton.value = false;
+            
             callFindById(id);
         }
         movieModalRef.value.showModal();
@@ -117,6 +120,8 @@
         }
         let uri = "/api/movie/find";
         axiosapi.post(uri , request).then(function(response){
+            console.log(response);
+            console.log(response.data.list[0].movie);
             movies.value = response.data.list;
 
             //分頁start
@@ -144,8 +149,8 @@
         });
         try {
             const response = await axiosapi.get(`/api/movie/movies/${id}`);
-            movie.value = response.data.list[0];
-
+            movie.value = response.data.list[0].movie;
+            
             setTimeout(function() {
                 Swal.close();
             }, 500);
@@ -204,8 +209,8 @@
         });
         try {
             let request = movie.value;
-            const response = await axiosapi.post("/api/movie/addMovie", request);
             console.log(request);
+            const response = await axiosapi.post("/api/movie/addMovie", request);
             
             if(response.data.success) {
                 Swal.fire({
