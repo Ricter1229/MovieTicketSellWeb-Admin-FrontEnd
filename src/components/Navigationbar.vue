@@ -8,48 +8,13 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav">
     
-                    <li v-if="!usersStore.isLogin" class="nav-item">
-                        <RouterLink to="/secure/login" class="nav-link" aria-current="page" >登入</RouterLink>
-                    </li>
-                    <li v-if="!usersStore.isLogin" class="nav-item">
-                        <RouterLink to="/secure/register" class="nav-link" aria-current="page" >註冊</RouterLink>
-                    </li>
-                    <li v-else class="nav-item">
-                        <button @click="logout" class="nav-link btn btn-link">登出</button>
-                    </li>
                     
-                    <li class="nav-item dropdown" >
-                        <span class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
-                                role="button" aria-expanded="false">
-                            電影管理
-                        </span>
-                        <ul class="dropdown-menu">
-                            <li><RouterLink class="dropdown-item" to="/movie">電影</RouterLink></li>
-                            <li><RouterLink class="dropdown-item" to="/moviefront">電影前端暫放用</RouterLink></li>
-                            <!-- <li><RouterLink class="dropdown-item" to="/onemovie">單一電影前端暫放用</RouterLink></li> -->
-                        </ul>
-                    </li>
                     <li class="nav-item">
                         <RouterLink to="/backend" class="nav-link" aria-current="page" >影城後台</RouterLink>
                     </li>
                     <li class="nav-item">
-                        <RouterLink to="/ads/set" class="nav-link" aria-current="page" >廣告管理</RouterLink>
+                        <RouterLink to="/ads/set" class="nav-link" aria-current="page" >廣告上傳</RouterLink>
                     </li>
-
-<!-- temp test -->
-                    <li class="nav-item">
-                        <RouterLink to="/test" class="nav-link" aria-current="page" >測試store</RouterLink>
-                    </li>
-                    <li class="nav-item">
-                        <RouterLink to="/schedule" class="nav-link" aria-current="page" >測試schedule</RouterLink>
-                    </li>
-                    
-                    <!-- <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-ticket-alt me-2"></i>服務</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-envelope me-2"></i>聯絡我們</a>
-                    </li> -->
                 </ul>
             </div>
         </div>
@@ -57,8 +22,8 @@
 </template>
 
 <script setup>
-    import useUsersStore from '@/store/users.js';
-    const usersStore = useUsersStore();
+
+
 
     const logout = () => {
         usersStore.logout();
