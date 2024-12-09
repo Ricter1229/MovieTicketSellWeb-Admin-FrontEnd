@@ -38,6 +38,12 @@
 
 <!-- temp test -->
                     <li class="nav-item">
+                        <RouterLink to="/testMovieWithStore" class="nav-link" aria-current="page" >測試電影新增至商店</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink to="/testCalender" class="nav-link" aria-current="page" >測試電影排程表</RouterLink>
+                    </li>
+                    <li class="nav-item">
                         <RouterLink to="/test" class="nav-link" aria-current="page" >測試store</RouterLink>
                     </li>
                     <li class="nav-item">

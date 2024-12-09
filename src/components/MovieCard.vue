@@ -1,7 +1,7 @@
 <template>
     <div class="card h-100" style="width: 260px; height: 400px;">
   <!-- 圖片會根據卡片的大小自動調整，保持比例 -->
-  <img class="card-img-top" alt="item.chineseName" :src="item.mainPhoto" style="object-fit: cover; height: 100%; width: 100%;">
+  <img class="card-img-top" :alt="item.movie.chineseName" :src="item.mainPhoto" style="object-fit: cover; height: 100%; width: 100%;">
         
   <div class="card-body d-flex flex-column" style="height: 50%; overflow: hidden;">
     <!-- 文字部分放在圖片下方，並自動調整 -->

@@ -26,11 +26,15 @@ import BookingIndex from "@/views/booking/BookingIndex.vue"
 // temp
 import TempMoney from "@/views/TempMoney.vue"
 import TheWelcome from '../components/TheWelcome.vue'
+import MovieCalender from "@/views/movie/MovieCalender.vue";
+import MovieWithStore from "@/views/movie/MovieWithStore.vue";
 
 const routes = [
 // temp
     { path: "/money", name: "temp-money-link", component: TempMoney },
     { path: "/test", name: "test-link", component: TheWelcome },
+    { path: "/testCalender", name: "test-calender-link", component: MovieCalender },
+    { path: "/testMovieWithStore", name: "test-testMovieWithStore-link", component: MovieWithStore },
 
 // user
     { path: "/:pathMatch(.*)", name: "notfound-link", component: NotFound },
