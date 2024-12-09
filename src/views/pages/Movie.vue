@@ -36,7 +36,7 @@
 
         <div class="row">
 
-            <div class="col-lg-3 col-md-6" v-for="movie in movies" :key="movie.id">
+            <div class="col-lg-3 col-md-6" style="height: 500px;" v-for="movie in movies" :key="movie.id">
                 <MovieCard :item="movie" @open-update="openModal" @delete="callRemove">
                 </MovieCard>
             </div>
@@ -54,7 +54,7 @@
     import {ref , onMounted} from 'vue'
     import { useRoute } from 'vue-router';
     import Swal from 'sweetalert2';
-    import axiosapi from '@/plugins/axios';
+    import axiosapi from '@/utils/axiosInstance'
     import MovieCard from '@/components/MovieCard.vue';
     import MovieSelect from '@/components/MovieSelect.vue';
     import MovieModal from '@/components/MovieModal.vue';
