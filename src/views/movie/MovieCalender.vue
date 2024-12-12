@@ -6,7 +6,7 @@
                 <!-- 影城、影廳切換下拉選單 -->
                 <div style="flex-grow: 1;">
                     <div>
-                        <select v-model="nowStore" @change="updateAuditorium">
+                        <select v-model="nowStore">
                             <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
                         </select>
                     </div>
@@ -45,11 +45,13 @@
                 <div v-if="nowIs == 'day'" class="schedule-column">
                     <div class="date-header">{{ formattedDay }}</div>
                     <div v-for="time in timeSlots" :key="time">
-                        <div class="schedule-item" @dragover.prevent @drop="handleDrop(formattedDay, time)">
-                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDay]?.[time] || [])"
+                        <div class="schedule-item" @dragover.prevent
+                            @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
+                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
                                 :key="item.id" class="dropped-item d-flex" draggable="true"
-                                @dragstart="handleDragStart(item, formattedDay, time)">
-                                <span>{{ item.movie.chineseName }}</span>
+                                @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
+                                <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
+                                    item.movie.chineseName }}</span>
                             </div>
                         </div>
                     </div>
@@ -58,13 +60,14 @@
                 <!-- 周视图 -->
                 <div v-else class="schedule-week">
                     <div class="day-column" v-for="day in week" :key="day">
-                        <div class="date-header">{{ day }}</div>
+                        <div class="date-header">{{ day.format("MM-DD(dd)") }}</div>
                         <div v-for="time in timeSlots" :key="time" class="schedule-item" @dragover.prevent
-                            @drop="handleDrop(day, time)">
-                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[day]?.[time] || [])"
+                            @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
+                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
                                 :key="item.id" class="dropped-item d-flex" draggable="true"
-                                @dragstart="handleDragStart(item, day, time)">
-                                <span>{{ item.movie.chineseName }}</span>
+                                @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
+                                <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
+                                    item.movie.chineseName }}</span>
                             </div>
                         </div>
                     </div>
@@ -81,7 +84,7 @@
 
         <!-- 影城提供的電影列表 -->
         <div style="border: 1px solid red;">
-            <select v-model="selectedVersionId" @change="fetchMovies">
+            <select v-model="selectedVersionId" @change="getMovie">
                 <option v-for="version in versions" :key="version.id" :value="version.id">
                     {{ version.version }}
                 </option>
@@ -110,6 +113,7 @@ import 'dayjs/locale/zh-cn'; // 引入中文语言包
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import axiosInstance from '@/utils/axiosInstance';
+import Swal from 'sweetalert2';
 dayjs.locale('zh-cn'); // 设置语言为中文
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -139,6 +143,12 @@ const versions = ref([])
 const selectedVersionId = ref(1)
 const nowStore = ref([]); // 默认选中第一个商店
 const nowAuditorium = ref(null); // 默认选中第一个商店的第一个影厅
+const removeForDB = new Map()
+let dataFromDB;
+
+const formattedDayToYearMonthDay = date => {
+    return dayjs(date).format("YYYY-MM-DD")
+}
 
 const init = () => {
     nowIs.value = 'day'
@@ -146,7 +156,6 @@ const init = () => {
     getStore()
     setTimeSlot()
     createDayCalendar()
-    getVersion()
 }
 
 const setTimeSlot = () => {
@@ -169,7 +178,7 @@ const getStore = async () => {
     stores.value = response.data.list
     nowStore.value = stores.value[0]
     getAuditorium()
-    getMovie()
+    getVersion()
 
 }
 
@@ -187,21 +196,28 @@ const getMovie = async () => {
         storeId: nowStore.value?.storeId,
         versionId: selectedVersionId.value
     }
-    console.log(request);
-
     const response = await axiosInstance.post('/api/store-release-movie/all-with-storeid-versionid', request)
     movies.value = response.data.data
-    console.log(movies.value);
 
     for (let i = 0; i < movies.value?.length; i++) {
         movies.value[i].mainPhoto = movies.value[i].movie.mimeType + movies.value[i].movie.photo
     }
+    loadSchedule()
 }
 
 const getVersion = async () => {
-    const response = await axiosInstance.get('/api/version/aleast-one-movie');
-    versions.value = response.data.data;
+    const request = {
+        storeId: nowStore.value?.storeId,
+    }
+    const response = await axiosInstance.post('/api/store-release-movie/get-versions',request);
+    const temp = response.data.data;
+    console.log(temp[0]);
+    versions.value = temp
+    console.log(versions.value);
+    
     selectedVersionId.value = versions.value[0]?.id;
+    getMovie()
+
 }
 
 const createDayCalendar = () => {
@@ -218,7 +234,8 @@ const createWeekCalendar = (offset = 0) => {
 
     week.value = []
     while (currentTime.isBefore(endOfWeek)) {
-        week.value.push(currentTime.format("MM-DD(dd)"));
+        // week.value.push(currentTime.format("MM-DD(dd)"));
+        week.value.push(currentTime);
         currentTime = currentTime.add(1, "day");
     }
 
@@ -231,6 +248,7 @@ const createWeekCalendar = (offset = 0) => {
 const initializeDroppedItems = (dateKey, time = null) => {
     const storeKey = nowStore.value?.storeId; // 當前影城ID
     const auditoriumKey = nowAuditorium.value.id; // 當前影廳ID
+    dateKey = dayjs(dateKey).format("YYYY-MM-DD")
 
     // 動態生成嵌套結構
     if (!droppedItems[storeKey]) droppedItems[storeKey] = {};
@@ -258,6 +276,7 @@ const back = () => {
             initializeDroppedItems(weekDay)
         });
     }
+    loadSchedule()
 }
 
 const next = () => {
@@ -277,29 +296,33 @@ const next = () => {
             initializeDroppedItems(weekDay)
         });
     }
+    loadSchedule()
 }
 
 const changeToWeek = () => {
+    if (nowIs.value === 'week')
+        return
     nowIs.value = 'week'
     createWeekCalendar()
+    console.log(droppedItems);
 
     // 初始化當前週的所有日期資料結構
     week.value.forEach((dateKey) => {
         initializeDroppedItems(dateKey);
     });
+    loadSchedule()
 }
 const changeToDay = () => {
+    if (nowIs.value === 'day')
+        return
     nowIs.value = 'day'
     day.value = day.value.startOf('week')
+    console.log(droppedItems);
 
     // 初始化當前日期資料結構
     initializeDroppedItems(day.value);
+    loadSchedule()
 }
-
-// 更新影厅
-const updateAuditorium = () => {
-    getAuditorium()
-};
 
 // 用于判断某个时间段是否需要隐藏（即已被合并）：
 const isHiddenSlot = (dateKey, time) => {
@@ -383,32 +406,37 @@ const handleDrop = (date, time) => {
         // 拖放的电影從原本排程上來的        
         if (dragInTimeSlot.value.length != 0) {
             const { dateKey: prevDateKey, time: prevTime } = dragInTimeSlot.value[0];
-            const prevItems = droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime];
+            const prevItems = [...(droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime] || [])]; // 创建数组副本
+            const currentItems = [...(droppedItems[storeKey][auditoriumKey][dateKey][time] || [])]; // 当前时间段的副本
 
             initializeDroppedItems(prevDateKey, prevTime);
+            initializeDroppedItems(dateKey, time);
 
-            if (prevItems?.length > 0) {
-                // 删除原位置的电影
-                droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime] = [];
-                // 交換
-                if (droppedItems[storeKey][auditoriumKey][dateKey][time].length != 0) {
-                    droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime].push(droppedItems[storeKey][auditoriumKey][dateKey][time][0])
-                }
-            }
-        }
-
-        // 原本已經有電影
-        if (droppedItems[storeKey][auditoriumKey][dateKey][time].length != 0) {
-            droppedItems[storeKey][auditoriumKey][dateKey][time][0] = {
-                ...currentDraggedItem.value,
-                rowSpan
+            if (prevItems.length > 0 && currentItems.length > 0) {
+                initializeDroppedItems(prevDateKey, prevTime)
+                // 交换数据
+                droppedItems[storeKey][auditoriumKey][dateKey][time] = prevItems; // 将之前的时间段数据放到当前时间段
+                droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime] = currentItems; // 将当前时间段数据放到之前的时间段
+            } else {
+                droppedItems[storeKey][auditoriumKey][dateKey][time] = prevItems; // 将之前的时间段数据放到当前时间段
+                delete droppedItems[storeKey][auditoriumKey][prevDateKey][prevTime]
             }
         } else {
-            droppedItems[storeKey][auditoriumKey][dateKey][time].push({
-                ...currentDraggedItem.value,
-                rowSpan
-            });
+            if (droppedItems[storeKey][auditoriumKey][dateKey][time].length != 0) {
+                // 原本已經有電影
+                droppedItems[storeKey][auditoriumKey][dateKey][time][0] = {
+                    ...currentDraggedItem.value,
+                    rowSpan
+                }
+            } else {
+                droppedItems[storeKey][auditoriumKey][dateKey][time].push({
+                    ...currentDraggedItem.value,
+                    rowSpan
+                });
+            }
         }
+
+
         // // 隐藏后续被合并的时间段
         // for (let i = 1; i < rowSpan; i++) {
         //     const nextTimeIndex = timeSlots.value.indexOf(time) + i;
@@ -428,6 +456,16 @@ const handleDrop = (date, time) => {
 
 };
 
+const remove = (date, time) => {
+    const storeKey = nowStore.value?.storeId; // 当前影城ID
+    const auditoriumKey = nowAuditorium.value.id; // 当前影厅ID
+    const storeReleaseMovieId = droppedItems[storeKey][auditoriumKey][date][time][0].storeReleaseMovieId
+    delete droppedItems[storeKey][auditoriumKey][date][time];
+
+    const key = `${storeKey}-${auditoriumKey}-${date}-${time}`;
+    removeForDB.set(key, { auditoriumKey, date, time, storeReleaseMovieId })
+}
+
 // 清空為儲存進資料庫的電影排程資料
 const clearInputSchedule = () => {
     const storeKey = nowStore.value.storeId; // 当前影城ID
@@ -437,41 +475,140 @@ const clearInputSchedule = () => {
     if (droppedItems[storeKey]?.[auditoriumKey]) {
         droppedItems[storeKey][auditoriumKey] = {};
     }
-    console.log(`Cleared schedule for Store: ${nowStore.value.name}, Auditorium: ${nowAuditorium.value.name}`);
-
+    loadSchedule()
 }
 
-const saveToDB = () => {
+const saveToDB = async () => {
     const storeKey = nowStore.value?.storeId; // 当前影城ID
     const request = ref({
         storeId: storeKey,
         movies: []
     })
-    console.log(nowStore.value.storeId);
 
-    console.log(droppedItems);
 
+    // 遍历 droppedItems
     if (droppedItems[storeKey]) {
-        const auditoriumKeys = Object.keys(droppedItems[storeKey]); // 获取对象的所有键
+        const auditoriumKeys = Object.keys(droppedItems[storeKey]);
 
-        for (const key of auditoriumKeys) {
-            const dateObject = droppedItems[storeKey][key]; // 获取每个键对应的值
-            const dateKey = Object.keys(dateObject); // 获取对象的所有键
-            for (const date of dateKey) {
-                const timeObject = droppedItems[storeKey][key][date]
-                const timeKey = Object.keys(timeObject); // 获取对象的所有键
-                for (const time of timeKey) {
-                    request.value.movies.push({
-                        auditoriumId: key, // 使用键作为 auditoriumId
-                        storeReleaseMovieId: timeObject[time][0].storeReleaseMovieId,
-                        date: new Date().getFullYear() + "-" + date,
-                        timeSlots: time,
-                    });
+        for (const auditoriumKey of auditoriumKeys) {
+            const dateObject = droppedItems[storeKey][auditoriumKey] || {};
+            const dbDateObject = dataFromDB[storeKey]?.[auditoriumKey] || {}; // 对应的 dataFromDB
+
+            const dateKeys = Object.keys(dateObject);
+
+            for (const date of dateKeys) {
+                const timeObject = dateObject[date] || {};
+                const dbTimeObject = dbDateObject[date] || {}; // 对应的时间段
+
+                const timeKeys = Object.keys(timeObject);
+
+                for (const time of timeKeys) {
+                    const droppedItem = timeObject[time][0]; // droppedItems 的电影信息
+                    const dbItem = dbTimeObject[time]?.[0]; // dataFromDB 的电影信息
+                    
+                    if (droppedItem && (!dbItem || droppedItem.storeReleaseMovieId !== dbItem.storeReleaseMovieId)) {
+                        // droppedItems 有值，且与 dataFromDB 不同，或者 dataFromDB 没值
+                        request.value.movies.push({
+                            auditoriumId: auditoriumKey,
+                            storeReleaseMovieId: droppedItem.storeReleaseMovieId,
+                            date: dayjs(date).format("YYYY-MM-DD"),
+                            timeSlots: time,
+                            isRemove: false,
+                        });
+                    }
                 }
             }
         }
     }
+    console.log(request);
+    
+
+    // 遍历 dataFromDB 检查 droppedItems 中是否有对应值
+    if (dataFromDB[storeKey]) {
+        const auditoriumKeys = Object.keys(dataFromDB[storeKey]);
+
+        for (const auditoriumKey of auditoriumKeys) {
+            const dateObject = dataFromDB[storeKey][auditoriumKey] || {};
+            const droppedDateObject = droppedItems[storeKey]?.[auditoriumKey] || {}; // 对应的 droppedItems
+
+            const dateKeys = Object.keys(dateObject);
+
+            for (const date of dateKeys) {
+                const timeObject = dateObject[date] || {};
+                const droppedTimeObject = droppedDateObject[date] || {}; // 对应的时间段
+
+                const timeKeys = Object.keys(timeObject);
+
+                for (const time of timeKeys) {
+                    const dbItem = timeObject[time][0]; // dataFromDB 的电影信息
+                    const droppedItem = droppedTimeObject[time]?.[0]; // droppedItems 的电影信息
+                    
+                    if (dbItem && !droppedItem) { 
+                        // dataFromDB 有值，但 droppedItems 没值
+                        request.value.movies.push({
+                            auditoriumId: auditoriumKey,
+                            storeReleaseMovieId: dbItem.storeReleaseMovieId,
+                            date: dayjs(date).format("YYYY-MM-DD"),
+                            timeSlots: time,
+                            isRemove: true,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     console.log(request.value);
+
+    try {
+        await axiosInstance.post('/api/auditorium-schedule/save-store', request.value)
+        Swal.fire("保存成功")
+    } catch (error) {
+        Swal.fire("保存失敗")
+    }
+}
+const loadSchedule = async () => {
+    const request = {
+        auditoriumId: nowAuditorium.value?.id,
+        movies: []
+    }
+
+    if (nowIs.value === 'day') {
+        const date = dayjs(day.value).format("YYYY-MM-DD")
+        request.movies.push({ date: date })
+        initializeDroppedItems(date)
+    } else {
+        week.value.forEach(day => {
+            const date = dayjs(day).format("YYYY-MM-DD")
+            request.movies.push({ date: date })
+            initializeDroppedItems(date)
+        })
+    }
+    const response = await axiosInstance.post('/api/auditorium-schedule/get-auditorium-date', request)
+    const tempArray = response.data.data
+
+    const storeKey = nowStore.value?.storeId;
+    for (let i = 0; i < tempArray.length; i++) {
+        const auditoriumKey = tempArray[i].auditoriumId;
+        const dateKey = dayjs(tempArray[i].date).format("YYYY-MM-DD")
+        const time = tempArray[i].timeSlots
+        const movie = movies.value.find(item => item.storeReleaseMovieId === tempArray[i].storeReleaseMovieId);
+        if (movie) {
+            initializeDroppedItems(dayjs(tempArray[i].date).format("YYYY-MM-DD"), time)
+            if (!droppedItems[storeKey][auditoriumKey][dateKey][time]?.[0]) {
+                droppedItems[storeKey][auditoriumKey][dateKey][time].push({
+                    ...movie,
+                    ...movie.movie
+                })
+            } else {
+                droppedItems[storeKey][auditoriumKey][dateKey][time][0] = {
+                    ...movie,
+                    ...movie.movie
+                }
+            }
+        }
+    }
+    dataFromDB = JSON.parse(JSON.stringify(droppedItems));
 }
 
 onMounted(() => {
@@ -480,9 +617,12 @@ onMounted(() => {
 
 // 监听商店变化，自动更新影厅
 watch(nowStore, (newStore) => {
-    nowAuditorium.value = newStore.value?.auditoriums[0] || null; // 自动选中新商店的第一个影厅
+    getAuditorium()
 });
 
+watch(nowAuditorium, (nowAuditorium) => {
+    loadSchedule()
+});
 </script>
 
 <style scoped>
