@@ -21,7 +21,7 @@ import CinemaMovieSchedule from "../views/cinemaback/CinemaMovieSchedule.vue";
 import CinemaAdsSet from "@/views/cinemaback/CinemaAdsSet.vue";
 
 // booking
-import BookingIndex from "@/views/booking/BookingIndex.vue"
+import InsertSeatingList from "@/views/booking/InsertSeatingList.vue";
 
 // temp
 import TempMoney from "@/views/TempMoney.vue"
@@ -59,27 +59,12 @@ const routes = [
     { path: "/", name: "main-page-link", component: MainPage },
     // { path: "/movie", name: "movie-link", component: () => import('@/views/booking/choose_store_and_time/JustTempForBooking.vue') },
     { 
-        path: "/booking", name: "booking-link", component: BookingIndex,
+        path: "/booking", name: "booking-link", component: InsertSeatingList,
         children: [
-            {
-                path: "choose-ticket",
-                name: "choose-ticket-link",
-                component: () => import('@/views/booking/ChooseTicket.vue'), 
-            },
             {
                 path: "choose-seat",
                 name: "choose-seat-link",
                 component: () => import('@/views/booking/ChooseSeat.vue'), 
-            },
-            {
-                path: "check-choose-deatil",
-                name: "check-choose-deatil-link",
-                component: () => import('@/views/booking/ShowChooseDetail.vue'), 
-            },
-            {
-                path: "ticket-detail",
-                name: "ticket-detail-link",
-                component: () => import('@/views/booking/TicketDetail.vue'), 
             },
         ]
     },

@@ -44,7 +44,7 @@
                         <RouterLink to="/testCalender" class="nav-link" aria-current="page" >測試電影排程表</RouterLink>
                     </li>
                     <li class="nav-item">
-                        <RouterLink to="/test" class="nav-link" aria-current="page" >測試store</RouterLink>
+                        <RouterLink to="/booking" class="nav-link" aria-current="page" >測試store</RouterLink>
                     </li>
                     <li class="nav-item">
                         <RouterLink to="/schedule" class="nav-link" aria-current="page" >測試schedule</RouterLink>
