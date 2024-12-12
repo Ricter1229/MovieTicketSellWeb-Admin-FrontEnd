@@ -7,7 +7,7 @@
                 </button>
             </div>
             <div class="col-6">
-                <input type="text" placeholder="電影名稱查詢" v-model="findName" @input="callFind(1)">
+                <input type="text" placeholder="電影名稱查詢" v-model.lazy="findName" @input="callFind(1)" >
             </div>
     
             <div class="col-3">
@@ -35,10 +35,12 @@
         <br>
 
         <div class="row">
-
-            <div class="col-lg-3 col-md-6" style="height: 500px;" v-for="movie in movies" :key="movie.id">
+            <div v-if="!isNoData" class="col-lg-3 col-md-6" style="height: 500px;" v-for="movie in movies" :key="movie.id">
                 <MovieCard :item="movie" @open-update="openModal" @delete="callRemove">
                 </MovieCard>
+            </div>
+            <div v-else class="text-center text-muted" style="padding: 20px;" >
+                沒有資料
             </div>
         </div>
         <br>
@@ -46,7 +48,7 @@
 
         <MovieModal ref="movieModalRef" v-model:movie="movie"
             :is-show-insert-button="isShowInsertButton" @insert="callCreate" @update="callModify">
-    </MovieModal>
+        </MovieModal>
 </template>
     
 <script setup>
@@ -60,6 +62,7 @@
     import MovieModal from '@/components/MovieModal.vue';
 
     const movies = ref([]);
+    let isNoData = false
 
     //分頁 start
     const findName = ref("");
@@ -75,16 +78,16 @@
     const movie = ref({});
     const movieModalRef = ref(null);
     const isShowInsertButton = ref(true);
-    function openModal(action, id) {
-        console.log(id);
-        
+    function openModal(action, id) {        
+        movieModalRef.value.init()
         if(action==="insert") {
             isShowInsertButton.value = true;
             movie.value = {};
         } else {
             isShowInsertButton.value = false;
-            
-            callFindById(id);
+            callFindById(id).then(() => {
+                movieModalRef.value.updateFirstAssignment();
+            });
         }
         movieModalRef.value.showModal();
     }
@@ -94,13 +97,12 @@
         callFind(current.value);
     });
 
-    function callFind(page) {
+    async function callFind(page) {
         // Swal.fire({
         //     title: "Loading.....",
         //     showConfirmButton: false,
         //     allowOutsideClick: false,
         // });
-        console.log("page" , page);
         if(page) {
             current.value = page;
             start.value = (page - 1) * rows.value;
@@ -119,19 +121,22 @@
             chineseName : findName.value
         }
         let uri = "/api/movie/find";
-        axiosapi.post(uri , request).then(function(response){
-            console.log(response);
-            console.log(response.data.list[0].movie);
-            movies.value = response.data.list;
-
-            //分頁start
-            total.value = response.data.count;
-            pages.value = Math.ceil(total.value / rows.value);
-            lastPageRows.value = total.value % rows.value;
-            //分頁end
-            setTimeout(function () {
-                Swal.close();
-            },500);
+        await axiosapi.post(uri , request).then(function(response) {
+            if (response.data.list && response.data.list.length > 0) {
+                movies.value = response.data.list;
+                isNoData = false
+                //分頁start
+                total.value = response.data.count;
+                pages.value = Math.ceil(total.value / rows.value);
+                lastPageRows.value = total.value % rows.value;
+                //分頁end
+                setTimeout(function () {
+                    Swal.close();
+                },500);
+            } else {
+                isNoData = true
+            }
+            
         }).catch(function(error) {
             console.log("error", error);
             Swal.fire({

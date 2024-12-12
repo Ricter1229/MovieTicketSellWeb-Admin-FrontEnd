@@ -121,6 +121,7 @@
     import Swal from 'sweetalert2';
     import axios from 'axios';
     import { ref, onMounted,defineProps,nextTick,watch,toRaw } from 'vue';
+import axiosInstance from '@/utils/axiosInstance';
     const fileInput = ref(null);
     const props = defineProps(["cinema", "isShowInsertButton"]);
     
@@ -183,6 +184,9 @@ function resetCinemaAuditorium() {
         Object.assign(receiveCinema.value, newData);
         console.log('cinema obj資訊');
         console.log(JSON.stringify(receiveCinema.value, null, 2));
+        // insertAuditorium()
+        console.log(receiveCinema.value.storeId, newData);
+        insertAuditorium(receiveCinema.value.storeId, newData)
     }
     
    
@@ -381,6 +385,21 @@ function resetCinemaAuditorium() {
                 });
             });
         }
+
+    const insertAuditorium = async (storeId, data) => {
+        console.log("12345654654648");
+
+        const request = {
+            storeId: storeId,
+            auditoriumList: data.auditoriums
+        } 
+        console.log("12345654654648",request);
+
+        const response = await axiosInstance.post('/api/Auditorium/insert-auditorium', request)
+        
+        console.log("12345654654648",response);
+        
+    }
 </script>
     
 <style scoped>
