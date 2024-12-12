@@ -14,7 +14,9 @@
 </div>
 
     <div @click="insertAds" class="addButton" v-if="isEditing">新增廣告</div>
+    <button type="button" class="btn btn-outline-danger bt"  @click.prevent="callDelete" v-if="isDeleting">刪除</button>
 
+    <button type="button" class="btn btn-outline-success bt" @click.prevent="doUpdate" v-if="isEditing">保存</button>
 
 
 
@@ -28,14 +30,8 @@
             </div>
         </VueDraggableNext>
     </section>
-    <!-- <button @click.prevent="callDelete" v-if="isDeleting">刪除</button> -->
-    <button type="button" class="btn btn-outline-danger"  @click.prevent="callDelete" v-if="isDeleting">刪除</button>
-    <!-- <button @click.prevent="doUpdate" v-if="isEditing">保存</button> -->
-    <!-- <div v-if="isEditing">
-        <input type="radio" class="btn-check" name="options-outlined" id="success-outlined" autocomplete="off" checked @click.prevent="doUpdate">
-        <label class="btn btn-outline-success" for="success-outlined">保存</label>
-    </div> -->
-    <button type="button" class="btn btn-outline-success" @click.prevent="doUpdate" v-if="isEditing">保存</button>
+
+
     <!-- <div @click="test">圖片測試</div> -->
   </template>
   
@@ -268,10 +264,15 @@ async function doUpdate() {
     
   </script>
   <style>
+  .bt{
+    float: right;
+    margin: 10px 40px 0px 0px;
+  }
     .adImg{
         width: 900px;
         height: 300px;
         margin-top: 10PX;
+        
     }
     .addButton{
         display: block;
@@ -285,10 +286,14 @@ async function doUpdate() {
     }
     .upload{
         opacity: 0;
+        position: absolute;
+        z-index: -1;
     }
     .ads{
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-top: 60px;
+        margin-bottom: 60px;
     }
 </style>
