@@ -11,10 +11,10 @@
                     <li v-if="!usersStore.isLogin" class="nav-item">
                         <RouterLink to="/secure/login" class="nav-link" aria-current="page" >登入</RouterLink>
                     </li>
-                    <li v-if="!usersStore.isLogin" class="nav-item">
-                        <RouterLink to="/secure/register" class="nav-link" aria-current="page" >註冊</RouterLink>
+                    <li class="nav-item" v-show="usersStore.isLogin">
+                        <RouterLink to="/admin" class="nav-link" aria-current="page" >管理</RouterLink>
                     </li>
-                    <li v-else class="nav-item">
+                    <li v-if="usersStore.isLogin" class="nav-item">
                         <button @click="logout" class="nav-link btn btn-link">登出</button>
                     </li>
                     

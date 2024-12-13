@@ -1,34 +1,25 @@
 <template>
-    <h3>登入</h3>
-    <form>
-        <table v-if="!codeSent">
-            <tbody>
-                <tr>
-                    <td>ID : </td>
-                    <td><input type="text" v-model="username" @focus="clearError()"></td>
-                    <td>{{ message }}</td>
-                </tr>
-                <tr>
-                    <td>PWD : </td>
-                    <td><input type="text" v-model="password" @focus="clearError()"></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td> </td>
-                    <td align="right"><button type="button" @click="login()">Login</button></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div v-else>
-            <p>請輸入您收到的驗證碼：</p>
-            <input type="text" v-model="validationCodeInput" placeholder="Validation Code" />
-            <button type="button" @click="validateCode()">Validate Code</button>
-        </div>
-    </form>
-
-    <div>
-        <button @click="openForgotPasswordModal">忘記密碼?</button>
+    <div class="login-container">
+        <h3>登入</h3>
+        <form>
+            <div>
+                <div class="form-group">
+                    <label for="username">帳號: </label>
+                    <input type="text" id="username" v-model="username" @focus="clearError()">
+                    <span class="error-message">{{ message }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="password">密碼: </label>
+                    <input type="text" id="password" v-model="password" @focus="clearError()">
+                </div>
+                <div class="form-group">
+                    <button type="button" @click="login()">Login</button>
+                </div>
+                <div class="form-group">
+                    <a href="#" @click.prevent="openForgotPasswordModal">忘記密碼?</a>
+                </div>
+            </div>
+        </form>
 
         <div v-if="showForgotPasswordModal" class="modal">
             <div class="modal-content">
@@ -39,12 +30,11 @@
             </div>
         </div>
     </div>
-
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import axiosapi from '@/utils/axiosInstance.js'
+import axiosapi from "@/plugins/axios.js"
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 import useUsersStore from '@/store/users.js';
@@ -55,9 +45,6 @@ const router = useRouter();
 const username = ref(null);
 const password = ref(null);
 const message = ref(null);
-
-const validationCodeInput = ref("");
-const codeSent = ref(false);
 
 const showForgotPasswordModal = ref(false);
 const resetUsername = ref("");
@@ -90,25 +77,30 @@ async function login() {
     };
 
     axiosapi.defaults.headers.authorization = "";
+    usersStore.setId("");
+    usersStore.setAccount("");
     usersStore.setEmail("");
+    usersStore.setPhone("");
+    usersStore.setBirthDate("");
     usersStore.setLogin(false);
     try {
         const response = await axiosapi.post("/ajax/secure/login", request);
+        const {id, account, phone, birthDate, email } = response.data;
 
         if (response.data.success) {
-            sessionStorage.setItem("user", response.data.user);
-            sessionStorage.setItem("token", response.data.token);
-            const expirationTime = new Date().getTime() + 60 * 5 * 1000; // 5分鐘後過期
-            sessionStorage.setItem("validationCode", response.data.validationCode);
-            sessionStorage.setItem("codeExpiration", expirationTime);
+            usersStore.setId(id);
+            usersStore.setAccount(account);
+            usersStore.setPhone(phone);
+            usersStore.setBirthDate(birthDate);
+            usersStore.setEmail(email);
+            usersStore.setLogin(true);
 
             Swal.fire({
                 icon: "success",
-                title: "驗證碼已寄出，請檢查您的信箱。",
-                // title: response.data.message,
+                title: response.data.message,
             })
-
-            codeSent.value = true; //驗證碼步驟
+            
+            router.push({ name: "main-page-link" });
         } else {
             message.value = response.data.message;
             Swal.fire({
@@ -120,45 +112,6 @@ async function login() {
         Swal.fire({
             icon: "error",
             title: "查詢失敗:" + error.message,
-        });
-    }
-}
-
-function validateCode() {
-    const storedCode = sessionStorage.getItem("validationCode");
-    const user = sessionStorage.getItem("user");
-    const token = sessionStorage.getItem("token");
-
-    const storedExpiration = sessionStorage.getItem("codeExpiration");
-    const currentTime = new Date().getTime();
-    if (currentTime > storedExpiration) {
-        Swal.fire({ icon: "error", title: "驗證碼已過期，請重新登入。" });
-        sessionStorage.removeItem("validationCode");
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("codeExpiration");
-        codeSent.value = false;
-        return
-    }
-
-    if (storedCode == validationCodeInput.value) {
-        Swal.fire({
-            icon: "success",
-            title: "hello",
-        }).then(function (result) {
-            axiosapi.defaults.headers.authorization = "Bearer " + token;
-            sessionStorage.removeItem("validationCode");
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("codeExpiration");
-            usersStore.setEmail(user);
-            usersStore.setLogin(true);
-            router.push({ name: "home-link" });
-        })
-    } else {
-        Swal.fire({
-            icon: "error",
-            title: "驗證碼錯誤，請重試。",
         });
     }
 }
@@ -191,22 +144,94 @@ async function sendResetPasswordRequest() {
 </script>
 
 <style scoped>
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+h3 {
+    text-align: center;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.9em;
+}
+
+p {
+    text-align: center;
+    color: #333;
+}
+
 .modal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content {
-    background: white;
+    background-color: #fff;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 10px;
     text-align: center;
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-content button {
+    margin: 5px;
 }
 </style>
