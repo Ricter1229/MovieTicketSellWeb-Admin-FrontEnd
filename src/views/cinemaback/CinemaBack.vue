@@ -5,9 +5,9 @@
         <section class="top">
             <form action="" class="search">
                 <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" v-model="findName" @change.prevent="callFind()">
-                <label for="floatingInput">店名搜尋</label>
-            </div>
+                    <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" v-model="findName" @change.prevent="callFind()">
+                    <label for="floatingInput">店名搜尋</label>
+                </div>
             </form>
             <form action="" class="search">
                 <div class="form-floating">
