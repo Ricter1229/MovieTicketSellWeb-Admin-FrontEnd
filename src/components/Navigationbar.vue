@@ -145,7 +145,6 @@
         transition: all 0.3s ease;
     }
 
-
     .navbar-brand {
         font-size: 1.8rem;
         font-weight: 700;
