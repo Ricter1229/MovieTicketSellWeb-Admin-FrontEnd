@@ -92,7 +92,7 @@
                                     </section>
                                 </section> -->
                                 <!-- <button  class="addBtn">➕</button> -->
-                                <CinemaAuditoriumInsert :key="cinemaAuditoriumKey" :cinema="cinema" @update-auditorium="receiveData"></CinemaAuditoriumInsert>
+                                <CinemaAuditoriumInsert :key="cinemaAuditoriumKey" :cinema="cinema" @update-auditorium="receiveData" @update-auditorium-delete="receiveDeleteData"></CinemaAuditoriumInsert>
                             </section>
 
                             
@@ -129,6 +129,7 @@
     import bootstrap from "bootstrap/dist/js/bootstrap.bundle.min.js"
     import Swal from 'sweetalert2';
     import axios from 'axios';
+    import axiosInstance from '@/utils/axiosInstance';
     import { ref, onMounted,defineProps,nextTick,watch,toRaw, defineEmits } from 'vue';
     const fileInput = ref(null);
        // 存储图片信息
@@ -301,16 +302,23 @@ function resetCinemaSubPhotoKey() {
     },
     { immediate: true } // 初始化時立即執行一次
     );
-
+    
     const receiveData=(newData)=>{
         console.log('B 組件接收到來自 C 的更新數據：', newData);
         // console.log(typeof(newData));
         Object.assign(receiveCinema.value, newData);
+        
         console.log('cinema obj資訊');
         console.log(JSON.stringify(receiveCinema.value, null, 2));
     }
-    
-   
+    const deleteId=ref();
+    const receiveDeleteData=(deleteData)=>{
+        console.log('B 組件接收到來自 C 的刪除數據：', deleteData);
+        // console.log(typeof(newData));
+        deleteId.value=deleteData;
+        console.log('deleteId.value：', deleteId.value);
+
+    }
 
 
 function clickSubsInput(){
@@ -402,6 +410,7 @@ function clickSubsInput(){
             ){
 
                 callModify(storeId);
+                callRemoveAud();
                 hideModal();
             }
     },500)
@@ -442,7 +451,7 @@ function clickSubsInput(){
                     title: "處理完成",
                 });
                 // try {
-                //     const response = await axios.delete(`http://localhost:8080/store/subphoto/delete/${id}`);
+                //     const response = await axiosInstance.delete(`/store/subphoto/delete/${id}`);
                 //     if(response.data.success) {
                         
                 //     } else {
@@ -459,6 +468,34 @@ function clickSubsInput(){
                 // }
             }
         }
+        async function callRemoveAud() {
+        console.log("callRemoveAud");
+
+          
+                const request=deleteId.value;
+                Swal.fire({
+                    title: "Loading.....",
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                });
+                try {
+                    const response = await axiosInstance.post(`/store/remove`,request);
+                    if(response.data.success) {
+                        console.log("成功刪除");
+                    } else {
+                        Swal.fire({
+                            icon: "warning",
+                            title: response.data.message,
+                        });
+                    }
+                } catch(error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "刪除失敗:"+ error.message,
+                    });
+                }
+            
+        }
 
     async function callModify(storeId) {
             console.log("callModify");
@@ -469,7 +506,7 @@ function clickSubsInput(){
             });
             try {
                 const rawData = toRaw(receiveCinema.value);
-                const response = await axios.put(`http://localhost:8080/store/update/${storeId}`, rawData);
+                const response = await axiosInstance.put(`/store/update/${storeId}`, rawData);
                 setTimeout(()=>{
             
                     console.log("rawData",rawData);
@@ -506,7 +543,7 @@ function clickSubsInput(){
             });
             const rawData = toRaw(receiveCinema.value);
 
-            axios.post("http://localhost:8080/store/insert", rawData).then(function(response) {
+            axiosInstance.post("/store/insert", rawData).then(function(response) {
                 
                 
                 // setTimeout(function() {

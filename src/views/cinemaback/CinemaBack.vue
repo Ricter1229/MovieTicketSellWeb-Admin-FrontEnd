@@ -55,6 +55,7 @@
         <thead class="table-light main_thead">
             <tr>
                 <th class="edit"></th>
+                <th class="edit"></th>
                 <th class="name">影城名稱</th>
                 <th class="address">影城地址</th>
                 <th class="phone">聯絡方式</th>
@@ -80,12 +81,13 @@
 </template>
     
 <script setup>
-    import CinemaSearch from './CinemaSearch.vue';
+
     import CinemaStoresFind from './CinemaStoresFind.vue';
     import CinemaModal from './CinemaModal.vue';
     import InsertSeatingList from '@/components/InsertSeatingList.vue';
     import Swal from 'sweetalert2';
     import axios from 'axios';
+    import axiosInstance from '@/utils/axiosInstance';
     import { ref,onMounted } from 'vue';
     const cinemas=ref([]);
     const regionCinemas=ref([]);
@@ -172,7 +174,7 @@
                 showConfirmButton: false,
                 allowOutsideClick: false,
             });
-            axios.get("http://localhost:8080/store/regions/findall").then(function(response) {
+            axiosInstance.get("/store/regions/findall").then(function(response) {
 
                 regions.value=response.data.list;
                 setTimeout(function() {
@@ -199,7 +201,7 @@
                     allowOutsideClick: false,
                 });
                 try {
-                    const response = await axios.delete(`http://localhost:8080/store/movies/${id}`);
+                    const response = await axiosInstance.delete(`/store/movies/${id}`);
                     if(response.data.success) {
                         Swal.fire({
                             icon: "success",
@@ -264,7 +266,7 @@
             
 
             
-            axios.post("http://localhost:8080/store/find", request).then(function(response) {
+            axiosInstance.post("/store/find", request).then(function(response) {
                 //分頁start
                 total.value=response.data.count;
                 pages.value=Math.ceil(total.value/max.value);
@@ -332,7 +334,7 @@
             
 
             
-            axios.post("http://localhost:8080/store/find", request).then(function(response) {
+            axiosInstance.post("/store/find", request).then(function(response) {
                 //分頁start
                 total.value=response.data.count;
                 pages.value=Math.ceil(total.value/max.value);
@@ -379,7 +381,7 @@
             
 
             
-            axios.post("http://localhost:8080/store/regions/find", request).then(function(response) {
+            axiosInstance.post("/store/regions/find", request).then(function(response) {
                 //分頁start     
                 console.log("response.data.count", response.data.count);
                 console.log("response.data.list", response.data.list);
@@ -409,7 +411,7 @@
             allowOutsideClick: false,
         });
         try {
-            const response = await axios.get(`http://localhost:8080/store/find/${storeId}`);
+            const response = await axiosInstance.get(`/store/find/${storeId}`);
             console.log("response", response.data.list[0]);
             if(response.data.list){
                 cinema.value=response.data.list[0];

@@ -24,7 +24,8 @@
     
 <script setup>
     import { ref,defineEmits,defineProps,watch,toRaw } from 'vue';
-    const emits=defineEmits(["update-auditorium"]);
+    import Swal from 'sweetalert2';
+    const emits=defineEmits(["update-auditorium","update-auditorium-delete"]);
     const allAuditoriums = ref({
         auditoriumList:[
             
@@ -37,6 +38,13 @@
             () => props.cinema,
             () => {
                 allAuditoriums.value.auditoriumList = props.cinema.auditoriumList; 
+                const auditoriumList= [{
+                        "auditoriumName": "",
+                        "auditoriumId": "",
+                    }];
+                if(allAuditoriums.value.auditoriumList==undefined){
+                    allAuditoriums.value.auditoriumList=auditoriumList;
+                }
             },
             { immediate: true, deep: true }
         );
@@ -45,6 +53,7 @@
             console.log(props.cinema);
             console.log(props.cinema.auditoriumList);
             console.log("deleteId",deleteId);
+            console.log("allAuditoriums.value",allAuditoriums.value);
             // console.log(typeof(props.cinema.auditoriums));
         }
     const addAuditorium = () => {
@@ -52,11 +61,22 @@
         allAuditoriums.value.auditoriumList.push({ auditoriumName: '', auditoriumId:'' });
     };
     const deleteId=ref([])
-    const deleteAuditorium = (index) => {
-    // 删除指定索引的 auditorium
-    allAuditoriums.value.auditoriumList.splice(index, 1);
-    deleteId.push(index);
-    emits("update-auditorium", allAuditoriums.value);
+    const deleteAuditorium = async function (index) {
+        const result = await Swal.fire({
+                title: "確定刪除嗎？",
+                showCancelButton: true,
+            });
+            if(result.isConfirmed) {
+
+                // 删除指定索引的 auditorium
+                if(allAuditoriums.value.auditoriumList[index].auditoriumId!==""){
+                    console.log("不是空白");
+                    deleteId.value.push(allAuditoriums.value.auditoriumList[index].auditoriumId);
+            
+                };
+                allAuditoriums.value.auditoriumList.splice(index, 1);
+                emits("update-auditorium-delete", deleteId.value);
+            }
 };
 //向上傳值
 function doInput(event, index){

@@ -38,6 +38,7 @@
   import { onMounted, ref,watch } from 'vue';
   import Swal from 'sweetalert2';
   import axios from 'axios';
+  import axiosInstance from '@/utils/axiosInstance';
   import { VueDraggableNext } from 'vue-draggable-next';
   const selectedIds = ref([]);
   function a(){
@@ -127,7 +128,7 @@
                     allowOutsideClick: false,
                 });
                 try {
-                    const response = await axios.delete(`http://localhost:8080/storeads/deleteadds`,{
+                    const response = await axiosInstance.delete(`/storeads/deleteadds`,{
                 data: rawData,
             });
                     if(response.data.success) {
@@ -172,7 +173,7 @@
                 allowOutsideClick: false,
             });
       
-            axios.get("http://localhost:8080/storeads/allads").then(function(response) {
+            axiosInstance.get("/storeads/allads").then(function(response) {
 
                 console.log("response.data.success", response.data.success);
                 if(response.data.success){
@@ -205,7 +206,7 @@
     };
     console.log('新增：');
     console.log('rawData',rawData);
-     await axios.put("http://localhost:8080/storeads/update", rawData).then(function(response) {
+     await axiosInstance.put("/storeads/update", rawData).then(function(response) {
         // console.log('axiosrawData',rawData);
         
     
