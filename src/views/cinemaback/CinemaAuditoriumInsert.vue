@@ -1,14 +1,14 @@
 <template>
-    <section  class="oneauditorium" v-for="(aud, index) in allAuditoriums.auditoriums" :key="index">
+    <section  class="oneauditorium" v-for="(aud, index) in allAuditoriums.auditoriumList" :key="index">
         <section class="auditorium">
             <section class="oneAud">
                 <label for="" class="lb">廳名稱: </label>
     
-                <input type="text" :value="aud.auditoriumName" @change="doInput($event,index,'name')">
+                <input type="text" :value="aud.auditoriumName" @change="doInput($event,index)">
 
                 
             </section>
-            <input type="file" name="" id="" class="auditoriumSeat" accept="application/json"  @change="doInput($event,index,'json')">
+            <!-- <input type="file" name="" id="" class="auditoriumSeat" accept="application/json"  @change="doInput($event,index,'json')"> -->
         </section>
                     <button type="button" class="btn btn-danger delete" @click="deleteAuditorium(index)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
@@ -19,69 +19,73 @@
             
     </section>
     <button type="button" class="btn btn-light addBtn" @click="addAuditorium">➕</button>
-    <!-- <div @click="test">json測試</div> -->
+    <div @click="test">json測試</div>
 </template>
     
 <script setup>
     import { ref,defineEmits,defineProps,watch,toRaw } from 'vue';
     const emits=defineEmits(["update-auditorium"]);
     const allAuditoriums = ref({
-        auditoriums:[
-            { auditoriumName: '', seat: {} }
+        auditoriumList:[
+            
         ]});
         
         const props = defineProps([
         "cinema",
         ]);
-        // watch(
-        //     () => props.cinema,
-        //     () => {
-        //         allAuditoriums.value.auditoriums = [...(props.cinema.auditoriums) ]; 
-        //     },
-        //     { immediate: true, deep: true }
-        // );
-        // function test(){
-        //     console.log("json測試");
-        //     console.log(props.cinema.auditoriums);
-        //     console.log(typeof(props.cinema.auditoriums));
-        // }
+        watch(
+            () => props.cinema,
+            () => {
+                allAuditoriums.value.auditoriumList = props.cinema.auditoriumList; 
+            },
+            { immediate: true, deep: true }
+        );
+        function test(){
+            console.log("json測試");
+            console.log(props.cinema);
+            console.log(props.cinema.auditoriumList);
+            console.log("deleteId",deleteId);
+            // console.log(typeof(props.cinema.auditoriums));
+        }
     const addAuditorium = () => {
         // 每次点击按钮，向 auditoriums 数组添加一个新的空对象
-        allAuditoriums.value.auditoriums.push({ auditoriumName: '', seat: {} });
+        allAuditoriums.value.auditoriumList.push({ auditoriumName: '', auditoriumId:'' });
     };
+    const deleteId=ref([])
     const deleteAuditorium = (index) => {
     // 删除指定索引的 auditorium
-    allAuditoriums.value.auditoriums.splice(index, 1);
+    allAuditoriums.value.auditoriumList.splice(index, 1);
+    deleteId.push(index);
     emits("update-auditorium", allAuditoriums.value);
 };
 //向上傳值
-function doInput(event, index,type){
-    if(type==="json"){
-        console.log("json");
-        console.log(allAuditoriums.value.auditoriums[0].auditoriumName);
-        const file=event.target.files[0];
-        if(file){
-            const reader=new FileReader;
-            // reader.readAsDataURL(file);
-            reader.onload=(e)=>{
-                try {
-                    const jsonContent = JSON.parse(e.target.result); // 解析 JSON
-                    allAuditoriums.value.auditoriums[index].seat = jsonContent; // 更新对应影厅的座位数据
-                    emits("update-auditorium", allAuditoriums.value); // 触发更新事件
-                } catch (error) {
-                    console.error("文件解析失败:", error);
-                }
-            };
-            reader.readAsText(file);
-        }
-        event.target.value = '';
-    }
-    if(type==="name"){
-        console.log("name");
-        console.log(allAuditoriums.value.auditoriums[index].auditoriumName);
-        allAuditoriums.value.auditoriums[index].auditoriumName=event.target.value;
+function doInput(event, index){
+    // if(type==="json"){
+    //     console.log("json");
+    //     console.log(allAuditoriums.value.auditoriums[0].auditoriumName);
+    //     const file=event.target.files[0];
+    //     if(file){
+    //         const reader=new FileReader;
+    //         // reader.readAsDataURL(file);
+    //         reader.onload=(e)=>{
+    //             try {
+    //                 const jsonContent = JSON.parse(e.target.result); // 解析 JSON
+    //                 allAuditoriums.value.auditoriums[index].seat = jsonContent; // 更新对应影厅的座位数据
+    //                 emits("update-auditorium", allAuditoriums.value); // 触发更新事件
+    //             } catch (error) {
+    //                 console.error("文件解析失败:", error);
+    //             }
+    //         };
+    //         reader.readAsText(file);
+    //     }
+    //     event.target.value = '';
+    // }
+    // if(type==="name"){
+        // console.log("name");
+        // console.log(allAuditoriums.value.auditoriums[index].auditoriumName);
+        allAuditoriums.value.auditoriumList[index].auditoriumName=event.target.value;
         emits("update-auditorium", allAuditoriums.value);
-    }
+    // }
 };
 </script>
     

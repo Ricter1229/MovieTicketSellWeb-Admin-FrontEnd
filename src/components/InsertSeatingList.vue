@@ -17,8 +17,8 @@
                 <div class="seat-container">
                     <div class="seat-list">
                         <div v-for="row in rows" :key="row" class="row">
-                            <div v-for="col in columns" :key="col" :class="[seat,isVisible(row, col)?'':'selected']" @click="toggleSeat(row, col)">
-                                <div >{{ `${row}-${col}` }}</div>
+                            <div v-for="col in columns" :key="col" class="seat" @click="toggleSeat(row, col)">
+                                <div v-if="isVisible(row, col)">{{ `${row}-${col}` }}</div>
                             </div>
                         </div>
                     </div>
@@ -564,7 +564,7 @@ const saveToDB = () => {
     color: black;
     border: 1px solid gray;
 }
-.selected{
+/* .selected{
   background-color: gray;
-}
+} */
 </style>

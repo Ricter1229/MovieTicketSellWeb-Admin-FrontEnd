@@ -166,7 +166,7 @@
         errorsIntro.value.subphoto = "* 請上傳至少3張圖片";
         validationBlurFlag.value=!validationBlurFlag.value;
         
-        console.log("validationBlurFlag.value",validationBlurFlag.value);
+        // console.log("validationBlurFlag.value",validationBlurFlag.value);
 }
 // 验证内容是否大于20字
 const validateIntroduce = () => {
@@ -192,13 +192,13 @@ const validateForm = () => {
 };
 watch(()=>validationFlag,
     ()=>{
-        console.log("2222")
+        // console.log("2222")
         validateIntroduce();
   });
 
 
 const handleInputChange = () => {
-    console.log("114514");
+    // console.log("114514");
 //   validateIntroduce(); // 每次输入变化时验证
   validateForm();
 };
@@ -213,7 +213,7 @@ const handleValidationStateInfor = (hasErrors) => {
 const handleValidationStateMain = (hasErrors) => {
     // hasValidationErrors.value = hasErrors;
     errors.value.mainPhoto=hasErrors;
-    console.log("hasErrors",hasErrors)
+    // console.log("hasErrors",hasErrors)
     // console.log("hasValidationErrors.value",hasValidationErrors.value)
 };
 
@@ -241,19 +241,19 @@ const cinemaSubPhotoKey=ref(0);
 // 控制 Cinema組件重置 的 事件
 function resetCinemaAuditorium() {
   cinemaAuditoriumKey.value++; // 修改 key，触发子组件重建
-  console.log("cinemaAuditoriumKey.value",cinemaAuditoriumKey.value);
+//   console.log("cinemaAuditoriumKey.value",cinemaAuditoriumKey.value);
 }
 function resetCinemaInforInsert() {
   cinemaInforInsertKey.value++; // 修改 key，触发子组件重建
-  console.log("cinemaInforInsertKey.value",cinemaInforInsertKey.value);
+//   console.log("cinemaInforInsertKey.value",cinemaInforInsertKey.value);
 }
 function resetCinemaMainphotoKey() {
     cinemaMainphotoKey.value++; // 修改 key，触发子组件重建
-  console.log("cinemaInforInsertKey.value",cinemaInforInsertKey.value);
+//   console.log("cinemaInforInsertKey.value",cinemaInforInsertKey.value);
 }
 function resetCinemaSubPhotoKey() {
     cinemaSubPhotoKey.value++; // 修改 key，触发子组件重建
-  console.log("cinemaSubPhotoKey.value",cinemaInforInsertKey.value);
+//   console.log("cinemaSubPhotoKey.value",cinemaInforInsertKey.value);
 }
 
     onMounted(() => {
@@ -261,7 +261,7 @@ function resetCinemaSubPhotoKey() {
             if (!fileInput.value) {
                 console.error("fileInput reference is not initialized.");
             }
-            console.log("refExampleModal.valuek",refExampleModal.value);
+            // console.log("refExampleModal.valuek",refExampleModal.value);
             modal.value = new bootstrap.Modal(refExampleModal.value);
         });
         const modalElement = refExampleModal.value;
@@ -276,10 +276,10 @@ function resetCinemaSubPhotoKey() {
                 receiveCinema.value={};
                 
                 cinemaTextAreaKey.value++;
-                console.log("cinemaTextAreaKey.value",cinemaTextAreaKey.value);
+                // console.log("cinemaTextAreaKey.value",cinemaTextAreaKey.value);
                 errorsIntro.value.introduce="";
                 errorsIntro.value.subphoto="";
-                console.log("errorsIntro.value.subphoto",errorsIntro.value.subphoto);
+                // console.log("errorsIntro.value.subphoto",errorsIntro.value.subphoto);
                 resetCinemaAuditorium();
                 resetCinemaInforInsert();
                 resetCinemaMainphotoKey();
@@ -304,7 +304,7 @@ function resetCinemaSubPhotoKey() {
 
     const receiveData=(newData)=>{
         console.log('B 組件接收到來自 C 的更新數據：', newData);
-        console.log(typeof(newData));
+        // console.log(typeof(newData));
         Object.assign(receiveCinema.value, newData);
         console.log('cinema obj資訊');
         console.log(JSON.stringify(receiveCinema.value, null, 2));
@@ -340,7 +340,7 @@ function clickSubsInput(){
                 // 更新到 receiveCinema
                 // Object.assign(receiveCinema.value.storeSubPhotoDtos, imagesBase64);
                 receiveCinema.value.storeSubPhotoDtos = [...imagesBase64];
-                console.log(receiveCinema.value.storeSubPhotoDtos);
+                // console.log(receiveCinema.value.storeSubPhotoDtos);
             };
                 
             });
@@ -470,6 +470,10 @@ function clickSubsInput(){
             try {
                 const rawData = toRaw(receiveCinema.value);
                 const response = await axios.put(`http://localhost:8080/store/update/${storeId}`, rawData);
+                setTimeout(()=>{
+            
+                    console.log("rawData",rawData);
+                },500)
                 if(response.data.success) {
                     Swal.fire({
                         icon: "success",
@@ -488,7 +492,7 @@ function clickSubsInput(){
             } catch(error) {
                 Swal.fire({
                     icon: "error",
-                    title: "刪除失敗:"+ error.message,
+                    title: "變更失敗:"+ error.message,
                 });
             }
         }
