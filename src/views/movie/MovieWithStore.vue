@@ -1,40 +1,139 @@
 <template>
     <div class="container d-flex">
-        <!-- 影城选择 -->
-        <div class="box-container">
-            <div class="d-flex">
-                <div style="flex-grow: 1;">
-                    <select v-model="nowStore" @change="initializeDroppedItems">
-                        <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
-                    </select>
-                </div>
-                <div style="flex-grow: 1;">
-                    <select v-model="nowVersionId" @change="initializeDroppedItems">
-                        <option
-                            v-for="versionId in (droppedItems[nowStore?.storeId] ? Object.keys(droppedItems[nowStore?.storeId]).sort((a, b) => Number(a) - Number(b)) : [])"
-                            :value="versionId">
-                            {{ versions.find(version => version.id == versionId)?.version || 'Unknown' }}
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <button class="btn btn-outline-success" @click="saveSchedule">存檔</button>
-                    <button @click="clearInput" class="btn btn-outline-secondary">清空</button>
+        <!-- 影城选择只加了card -->
+        <div class="card card-left">
+            <div class="card-header">
+                <div class="box-container">
+                    <div class="d-flex">
+                        <div>
+
+                            <div class="form-floating cinema">
+                                <select class="form-select" id="floatingSelect" aria-label="Floating label select example"  v-model="nowStore" @change="initializeDroppedItems">
+                                    <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
+                                </select>
+                                <label for="floatingSelect">影城</label>
+                            </div>
+
+                            <!-- <select v-model="nowStore" @change="initializeDroppedItems">
+                                <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
+                            </select> -->
+                        </div>
+                        <div>
+                            <!--  -->
+                            <div class="form-floating version">
+                                <select class="form-select" id="floatingSelect" aria-label="Floating label select example" v-model="nowVersionId" @change="initializeDroppedItems" >
+                                    <option v-for="versionId in (droppedItems[nowStore?.storeId] ? Object.keys(droppedItems[nowStore?.storeId]).sort((a, b) => Number(a) - Number(b)) : [])"
+                                    :value="versionId">{{ versions.find(version => version.id == versionId)?.version || 'Unknown' }}</option>
+                                </select>
+                                <label for="floatingSelect">電影版本</label>
+                            </div>
+                            <!--  -->
+                            <!-- <select v-model="nowVersionId" @change="initializeDroppedItems">
+                                <option
+                                    v-for="versionId in (droppedItems[nowStore?.storeId] ? Object.keys(droppedItems[nowStore?.storeId]).sort((a, b) => Number(a) - Number(b)) : [])"
+                                    :value="versionId">
+                                    {{ versions.find(version => version.id == versionId)?.version || 'Unknown' }}
+                                </option>
+                            </select> -->
+                        </div>
+                        <div class="btns">
+                            <button class="btn btn-outline-success" @click="saveSchedule">存檔</button>
+                            <button @click="clearInput" class="btn btn-outline-secondary">清空</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- 拖放目标区域 -->
-            <div class="content-container" @dragover.prevent @drop="handleDrop">
-                <div v-for="(item, index) in droppedItems[nowStore?.storeId]?.[nowVersionId]" :key="index"
-                    class="dropped-item card">
-                    <img :src="item.mainPhoto" :alt="item.movie.chineseName" class="card-img-top" />
-                    <p class="card-text">{{ item.movie.chineseName }}</p>
+            <div class="card-body">
+                <!-- 拖放目标区域 -->
+                <div class="content-container" @dragover.prevent @drop="handleDrop">
+                    <div v-for="(item, index) in droppedItems[nowStore?.storeId]?.[nowVersionId]" :key="index"
+                        class="dropped-item card">
+                        <img :src="item.mainPhoto" :alt="item.movie.chineseName" class="card-img-top" />
+                        <p class="card-text">{{ item.movie.chineseName }}</p>
+                    </div>
+                </div>
+            </div>
+        
+         </div>
+         <!-- <div class="card card-left">
+            <div class="card-header">
+                <div class="box-container">
+                    <div class="d-flex">
+                        <div style="flex-grow: 1;">
+                            <select v-model="nowStore" @change="initializeDroppedItems">
+                                <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
+                            </select>
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <select v-model="nowVersionId" @change="initializeDroppedItems">
+                                <option
+                                    v-for="versionId in (droppedItems[nowStore?.storeId] ? Object.keys(droppedItems[nowStore?.storeId]).sort((a, b) => Number(a) - Number(b)) : [])"
+                                    :value="versionId">
+                                    {{ versions.find(version => version.id == versionId)?.version || 'Unknown' }}
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-success" @click="saveSchedule">存檔</button>
+                            <button @click="clearInput" class="btn btn-outline-secondary">清空</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- 拖放目标区域 -->
+                <!-- <div class="content-container" @dragover.prevent @drop="handleDrop">
+                    <div v-for="(item, index) in droppedItems[nowStore?.storeId]?.[nowVersionId]" :key="index"
+                        class="dropped-item card">
+                        <img :src="item.mainPhoto" :alt="item.movie.chineseName" class="card-img-top" />
+                        <p class="card-text">{{ item.movie.chineseName }}</p>
+                    </div>
+                </div>
+            </div>
+        
+         </div> -->
+    
+    <hr>
+    <div class="card card-right text-bg-secondary mb-3">
+        <div class="card-header">
+            <div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <button @click="loadPreviousVersion" class="btn btn-sm btn-secondary">&lt;</button>
+                    <!--  -->
+                    <div class="form-floating">
+                        <select class="form-select version-right" id="floatingSelect" aria-label="Floating label select example" v-model="selectedVersionId" @change="fetchMovies">
+                            <option v-for="version in versions" :key="version.id" :value="version.id"> {{ version.version }}</option>
+                        </select>
+                        <label for="floatingSelect">電影版本</label>
+                    </div>
+                    <!--  -->
+                    <!-- <select v-model="selectedVersionId" @change="fetchMovies">
+                        <option v-for="version in versions" :key="version.id" :value="version.id">
+                            {{ version.version }}
+                        </option>
+                    </select> -->
+                    <button @click="loadNextVersion" class="btn btn-sm btn-secondary">&gt;</button>
                 </div>
             </div>
         </div>
-
+        <div class="card-body">
+            <div v-for="movieCard in movieCards" :key="movieCard.id" draggable="true"
+                @dragstart="handleDragStart(movieCard)">
+                <div v-if="!isMovieInDroppedItems(movieCard)" class="card">
+                    <img :src="movieCard.mainPhoto" class="card-img-top" :alt="movieCard.movie.chineseName" />
+                    <div class="card-body">
+                        <p class="card-text">{{ movieCard.movie.chineseName }}</p>
+                    </div>
+                </div>
+            </div>
+            <div v-if="totalPages > 1">
+                <button @click="loadPreviousPage" class="btn btn-sm btn-secondary">&lt;</button>
+                <button @click="loadNextPage" class="btn btn-sm btn-secondary">&gt;</button>
+            </div>
+        </div>
+    </div>
         <!-- 可拖拽的电影卡片 -->
-        <div class="movie-box-container">
+        <!-- <div class="movie-box-container">
             <div>
                 <div class="d-flex align-items-center justify-content-between">
                     <button @click="loadPreviousVersion" class="btn btn-sm btn-secondary">&lt;</button>
@@ -59,7 +158,7 @@
                 <button @click="loadPreviousPage" class="btn btn-sm btn-secondary">&lt;</button>
                 <button @click="loadNextPage" class="btn btn-sm btn-secondary">&gt;</button>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -206,7 +305,7 @@ const saveSchedule = async () => {
     const storeId = nowStore.value.storeId;
     const versionId = selectedVersionId.value;
 
-    console.log(droppedItems.value[storeId][versionId][0].movieVersionId);
+    // console.log(droppedItems.value[storeId][versionId][0].movieVersionId);
     const packagedData = []
     packagedData.push({ storeId, movieVersionIds: [] })
 
@@ -327,23 +426,28 @@ const loadNextVersion = () => {
 .container {
     display: flex;
     justify-content: space-between;
+    margin-top: 30px;
+}
+.btn{
+    margin-left: 20px;
 }
 
 .box-container {
-    margin: 20px;
+    /* margin: 20px; */
     flex: 1;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     border-radius: 15px;
     padding: 10px;
+    width: 800px;
 }
 
 .content-container {
-    height: 100vh;
-    border: 1px solid black;
+    /* height: 100vh; */
+    /* border: 1px solid black; */
     border-radius: 15px;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 30px;
     padding: 10px;
 }
 
@@ -359,13 +463,36 @@ const loadNextVersion = () => {
 .card {
     margin-bottom: 15px;
 }
+.card-left{
+    width: 950px;
+}
+.card-right{
+    width: 400px;
+    margin-left: 40px;
+}
 
+.cinema{
+    width: 300px;
+    margin-right: 20px;
+}
+.version{
+    width: 220px;
+
+}
+.version-right{
+    background-color: rgb(241, 241, 241);
+
+}
 .card-img-top {
-    height: 150px;
-    object-fit: cover;
+    height: 250px;
+    width: 200px;
+    object-fit:fill;
     margin-bottom: 10px;
 }
 
+.btns{
+    margin-left: 80px;
+}
 .dropped-item {
     display: flex;
     align-items: center;
@@ -374,6 +501,11 @@ const loadNextVersion = () => {
     padding: 10px;
     border-radius: 8px;
     background-color: #f9f9f9;
-    height: 360px;
+    height: 340px;
+    width: 250px;
+}
+hr{
+    border: 2px dashed black;
+    margin: 0px 0px 0px 20px;
 }
 </style>

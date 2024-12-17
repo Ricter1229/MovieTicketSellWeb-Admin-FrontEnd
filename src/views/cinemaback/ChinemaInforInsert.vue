@@ -120,7 +120,7 @@ const props = defineProps([
                 }
                 break;
             case 'position':
-                if (!/^2[2-5](\.\d+)?,12[0-2](\.\d+)?$/.test(value)) {
+                if (!/^2[2-5](\.\d+)?[,\s]+12[0-2](\.\d+)?$/.test(value)) {
                     errors.value.position = '* 經緯度格式不正確，應為22~25,120~122的格式\n(ex:22.221,121.5843)';
                 } else {
                     errors.value.position = '';

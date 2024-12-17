@@ -1,107 +1,161 @@
 <template>
-    <div class="d-flex">
-        <!-- 日曆 -->
-        <div class="calendar-container">
-            <div style="display: flex;">
-                <!-- 影城、影廳切換下拉選單 -->
-                <div style="flex-grow: 1;">
-                    <div>
-                        <select v-model="nowStore">
-                            <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
-                        </select>
+    <div class="d-flex-main">
+        <section class="main">
+
+            <!-- 日曆 -->
+            <div class="calendar-container">
+                <div style="display: flex;">
+                    <!-- 影城、影廳切換下拉選單 -->
+                    <div class="sl-flex" style="flex-grow: 1;">
+                        <!--  -->
+                        <div class="form-floating sl-left">
+                            <select class="form-select" id="floatingSelect" aria-label="Floating label select example" v-model="nowStore">
+                                <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
+                            </select>
+                            <label for="floatingSelect">影城名稱</label>
+                        </div>
+                        <!--  -->
+                        <!-- <div>
+                            <select v-model="nowStore">
+                                <option v-for="store in stores" :key="store.id" :value="store">{{ store.name }}</option>
+                            </select>
+                        </div> -->
+
+                        <!--  -->
+                        <div class="form-floating sl-aud">
+                            <select class="form-select" id="floatingSelect" aria-label="Floating label select example" v-if="auditoriums" v-model="nowAuditorium">
+                                <option  v-for="auditorium in auditoriums" :key="auditorium.id" :value="auditorium">{{ auditorium.name }}</option>
+                            </select>
+                            <label for="floatingSelect">影廳名稱</label>
+                        </div>
+                        <!--  -->
+                        <!-- <div>
+                            <select v-if="auditoriums" v-model="nowAuditorium">
+                                <option v-for="auditorium in auditoriums" :key="auditorium.id" :value="auditorium">
+                                    {{ auditorium.name }}</option>
+                            </select>
+                        </div> -->
                     </div>
-                    <div>
-                        <select v-if="auditoriums" v-model="nowAuditorium">
-                            <option v-for="auditorium in auditoriums" :key="auditorium.id" :value="auditorium">
-                                {{ auditorium.name }}</option>
-                        </select>
+    
+                    <!-- 存檔 清空按鈕 -->
+                    <div class="btns">
+                        <button @click="saveToDB" class="btn btn-outline-success">存檔</button>
+                        <button @click="clearInputSchedule" class="btn btn-outline-secondary">清空</button>
                     </div>
                 </div>
-
-                <!-- 存檔 清空按鈕 -->
+    
+                <!-- 週、日按钮切换 -->
+                <div class="view-switch">
+                    <button @click="changeToWeek" class="btn btn-primary">Week View</button>
+                    <button @click="changeToDay" class="btn btn-primary">Day View</button>
+                </div>
+    
+                <!-- 时间段与排程 -->
+                <div class="day">
+                    <!-- 时间段列 -->
+                    <div class="time-column">
+                        <div class="time-header">時間段</div>
+                        <div v-for="time in timeSlots" :key="time" class="time-slot">
+                            <div>[{{ time }}]</div>
+                        </div>
+                    </div>
+    
+                    <!-- 日视图 -->
+                    <div v-if="nowIs == 'day'" class="schedule-column">
+                        <div class="date-header">{{ formattedDay }}</div>
+                        <div v-for="time in timeSlots" :key="time">
+                            <div class="schedule-item" @dragover.prevent
+                                @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
+                                <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
+                                    :key="item.id" class="dropped-item d-flex" draggable="true"
+                                    @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
+                                    <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
+                                        item.movie.chineseName }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- 周视图 -->
+                    <div v-else class="schedule-week">
+                        <div class="day-column" v-for="day in week" :key="day">
+                            <div class="date-header">{{ day.format("MM-DD(dd)") }}</div>
+                            <div v-for="time in timeSlots" :key="time" class="schedule-item" @dragover.prevent
+                                @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
+                                <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
+                                    :key="item.id" class="dropped-item d-flex" draggable="true"
+                                    @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
+                                    <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
+                                        item.movie.chineseName }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- 底部翻页按钮 -->
+                <div class="navigation">
+                    <button @click="back" class="btn btn-secondary">&lt;</button>
+                    <button @click="next" class="btn btn-secondary">&gt;</button>
+                </div>
+            </div>
+    
+    
+            
+            <hr>
+            <!-- 影城提供的電影列表 -->
+            <div class="card text-bg-secondary mb-3" >
+                <div class="card-header">
+                    <section class="sl-section">
+                        <div class="form-floating sl">
+                            <select class="form-select version-right" id="floatingSelect" aria-label="Floating label select example" v-model="selectedVersionId" @change="getMovie">
+                                <option v-for="version in versions" :key="version.id" :value="version.id"> {{ version.version }}</option>
+                            </select>
+                            <label for="floatingSelect">電影版本</label>
+                        </div>
+                    </section>
+                    <!-- <select v-model="selectedVersionId" @change="getMovie">
+                    <option v-for="version in versions" :key="version.id" :value="version.id">
+                        {{ version.version }}
+                    </option>
+                    </select> -->
+                    <div class="provide-movie">
+                        {{ nowStore.name }} 提供的電影
+                    </div>
+                </div>
+                <div class="card-body-outer">
+                    <div v-if="nowStore" v-for="movie in movies" :key="movie.movie.id" class="d-flex" calss="card w-75 mb-3">
+                    <div class="card-body-inner" draggable="true" @dragstart="handleDragStart(movie)">
+                        <div class="card-text" >
+                            <img :src="movie.mainPhoto" :alt="movie.movie.chineseName">
+                            <div class="card-title">{{ movie.movie.chineseName }}</div>
+                            <!-- <div>{{ movie.movie.runTime }}分鐘</div> -->
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <!-- <div style="border: 1px solid red;">
+                <select v-model="selectedVersionId" @change="getMovie">
+                    <option v-for="version in versions" :key="version.id" :value="version.id">
+                        {{ version.version }}
+                    </option>
+                </select>
                 <div>
-                    <button @click="saveToDB" class="btn btn-outline-success">存檔</button>
-                    <button @click="clearInputSchedule" class="btn btn-outline-secondary">清空</button>
+                    {{ nowStore.name }} 提供的電影
                 </div>
-            </div>
-
-            <!-- 週、日按钮切换 -->
-            <div class="view-switch">
-                <button @click="changeToWeek" class="btn btn-primary">Week View</button>
-                <button @click="changeToDay" class="btn btn-primary">Day View</button>
-            </div>
-
-            <!-- 时间段与排程 -->
-            <div class="day">
-                <!-- 时间段列 -->
-                <div class="time-column">
-                    <div class="time-header">時間段</div>
-                    <div v-for="time in timeSlots" :key="time" class="time-slot">
-                        <div>[{{ time }}]</div>
+                <div v-if="nowStore" v-for="movie in movies" :key="movie.movie.id" class="d-flex" calss="card w-75 mb-3">
+                    <div class="card-body" draggable="true" @dragstart="handleDragStart(movie)">
+                        <div card-text>
+                            <img :src="movie.mainPhoto" :alt="movie.movie.chineseName">
+                            <div class="card-title">{{ movie.movie.chineseName }}</div> -->
+                            <!-- <div>{{ movie.movie.runTime }}分鐘</div> -->
+                        <!-- </div>
                     </div>
                 </div>
-
-                <!-- 日视图 -->
-                <div v-if="nowIs == 'day'" class="schedule-column">
-                    <div class="date-header">{{ formattedDay }}</div>
-                    <div v-for="time in timeSlots" :key="time">
-                        <div class="schedule-item" @dragover.prevent
-                            @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
-                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
-                                :key="item.id" class="dropped-item d-flex" draggable="true"
-                                @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
-                                <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
-                                    item.movie.chineseName }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 周视图 -->
-                <div v-else class="schedule-week">
-                    <div class="day-column" v-for="day in week" :key="day">
-                        <div class="date-header">{{ day.format("MM-DD(dd)") }}</div>
-                        <div v-for="time in timeSlots" :key="time" class="schedule-item" @dragover.prevent
-                            @drop="handleDrop(formattedDayToYearMonthDay(day), time)">
-                            <div v-for="item in (droppedItems[nowStore.storeId]?.[nowAuditorium.id]?.[formattedDayToYearMonthDay(day)]?.[time] || [])"
-                                :key="item.id" class="dropped-item d-flex" draggable="true"
-                                @dragstart="handleDragStart(item, formattedDayToYearMonthDay(day), time)">
-                                <span @dblclick="remove(formattedDayToYearMonthDay(day), time)">{{
-                                    item.movie.chineseName }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 底部翻页按钮 -->
-            <div class="navigation">
-                <button @click="back" class="btn btn-secondary">&lt;</button>
-                <button @click="next" class="btn btn-secondary">&gt;</button>
-            </div>
-        </div>
-
-
-        <!-- 影城提供的電影列表 -->
-        <div style="border: 1px solid red;">
-            <select v-model="selectedVersionId" @change="getMovie">
-                <option v-for="version in versions" :key="version.id" :value="version.id">
-                    {{ version.version }}
-                </option>
-            </select>
-            <div>
-                {{ nowStore.name }} 提供的電影
-            </div>
-            <div v-if="nowStore" v-for="movie in movies" :key="movie.movie.id" class="d-flex" calss="card w-75 mb-3">
-                <div class="card-body" draggable="true" @dragstart="handleDragStart(movie)">
-                    <div card-text>
-                        <img :src="movie.mainPhoto" :alt="movie.movie.chineseName">
-                        <div class="card-title">{{ movie.movie.chineseName }}</div>
-                        <!-- <div>{{ movie.movie.runTime }}分鐘</div> -->
-                    </div>
-                </div>
-            </div>
-        </div>
+            </div> -->
+        </section>
+        
     </div>
 </template>
 
@@ -627,14 +681,27 @@ watch(nowAuditorium, (nowAuditorium) => {
 
 <style scoped>
 /* 主容器样式 */
+.d-flex-main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.main{
+    display: flex;
+}
 .calendar-container {
     max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
+    margin: 20px;
+    padding: 40px;
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.card{
+    margin: 20px;  
+    width: 400px;
 }
 
 /* 视图切换按钮 */
@@ -789,6 +856,54 @@ watch(nowAuditorium, (nowAuditorium) => {
 }
 
 img {
-    max-width: 100px;
+    /* max-width: 100px; */
+    width: 130px;
+}
+.card-body {
+    display: flex;
+    flex-wrap: wrap;
+}
+.card-body-outer {
+    padding: 20px 25px 20px 25px;
+    display: flex;
+    flex-wrap: wrap;
+}
+.card-body-inner {
+    margin:  20px;
+}
+.provide-movie{
+    text-align: center;
+    margin-top: 20px;
+}
+.sl-left{
+    margin-bottom: 20px;
+    margin-right: 20px;
+    width: 240px;
+}
+.sl{
+    width: 200px;
+}
+.sl-section{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+.version-right{
+    background-color: rgb(241, 241, 241);
+
+}
+.sl-aud{
+    width: 100px;
+    margin-right: 30px;
+}
+.sl-flex{
+    display: flex;
+}
+.btn{
+    margin-left: 10px;
+}
+hr{
+    border: 2px dashed black;
+    margin: 20px 30px 20px 10px;
 }
 </style>

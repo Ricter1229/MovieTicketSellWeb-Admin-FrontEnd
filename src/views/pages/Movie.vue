@@ -1,54 +1,112 @@
 <template>
-        <h3>電影管理</h3>
-        <div class="row">
-            <div class="col-3">
-                <button type="button" class="btn btn-primary" @click="openModal('insert')">
-                    開啟新增
-                </button>
-            </div>
-            <div class="col-6">
-                <input type="text" placeholder="電影名稱查詢" v-model.lazy="findName" @input="callFind(1)" >
-            </div>
+    <div class="main">
+
+        <!--  -->
+        <div class="card card-outer">
+            <div class="card-header">
+                <h3 class="center">電影管理</h3>
+                <div class="row-top">
+                    <div class="">
+                        <button type="button" class="btn btn-primary insert" @click="openModal('insert')">
+                            開啟新增
+                        </button>
+                    </div>
+                    <div class="center">
+                        <input type="text" placeholder="電影名稱查詢" v-model.lazy="findName" @input="callFind(1)" >
+                    </div>
+        
+                </div>
+                <div class="sl-outer">
+                    <MovieSelect class="sl" :options="[2, 3, 4, 5, 8, 10]"
+                    :total="total" v-model="rows" @change="callFind(1)" ></MovieSelect>
+                </div>
+            <br>
     
-            <div class="col-3">
-                <MovieSelect :options="[2, 3, 4, 5, 8, 10]"
-                :total="total" v-model="rows" @change="callFind(1)" ></MovieSelect>
+            <div class="row">
+            <div class="center" v-show="total>0">
+                    <Paginate 
+                        class="pages"
+                        v-model="current"    
+                        :page-count="pages"
+                        :click-handler="callFind"
+                        :initial-page="current"
+                        :first-last-button="true"
+                        first-button-text="&lt;&lt;"
+                        last-button-text="&gt;&gt;"
+                        prev-text="&lt;"
+                        next-text="&gt;">
+                    </Paginate>
+                </div>
+            </div>
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    <div  class="movie-sec">
+                        <div v-if="!isNoData" style="height: 500px;" v-for="movie in movies" :key="movie.id">
+                            <MovieCard :item="movie" @open-update="openModal" @delete="callRemove">
+                            </MovieCard>
+                        </div>
+                        <div v-else class="text-center text-muted" style="padding: 20px;" >
+                            沒有資料
+                        </div>
+                    </div>
+                    <br>
+    
+                </blockquote>
             </div>
         </div>
-        <br>
-
-        <div class="row">
-        <div class="col-6" v-show="total>0">
-                <Paginate 
-                    v-model="current"    
-                    :page-count="pages"
-                    :click-handler="callFind"
-                    :initial-page="current"
-                    :first-last-button="true"
-                    first-button-text="&lt;&lt;"
-                    last-button-text="&gt;&gt;"
-                    prev-text="&lt;"
-                    next-text="&gt;">
-                </Paginate>
+        <!--  -->
+            <!-- <h3>電影管理</h3>
+            <div class="row">
+                <div class="col-3">
+                    <button type="button" class="btn btn-primary" @click="openModal('insert')">
+                        開啟新增
+                    </button>
+                </div>
+                <div class="col-6">
+                    <input type="text" placeholder="電影名稱查詢" v-model.lazy="findName" @input="callFind(1)" >
+                </div>
+        
+                <div class="col-3">
+                    <MovieSelect :options="[2, 3, 4, 5, 8, 10]"
+                    :total="total" v-model="rows" @change="callFind(1)" ></MovieSelect>
+                </div>
             </div>
-        </div>
-        <br>
-
-        <div class="row">
-            <div v-if="!isNoData" class="col-lg-3 col-md-6" style="height: 500px;" v-for="movie in movies" :key="movie.id">
-                <MovieCard :item="movie" @open-update="openModal" @delete="callRemove">
-                </MovieCard>
+            <br>
+    
+            <div class="row">
+            <div class="col-6" v-show="total>0">
+                    <Paginate 
+                        v-model="current"    
+                        :page-count="pages"
+                        :click-handler="callFind"
+                        :initial-page="current"
+                        :first-last-button="true"
+                        first-button-text="&lt;&lt;"
+                        last-button-text="&gt;&gt;"
+                        prev-text="&lt;"
+                        next-text="&gt;">
+                    </Paginate>
+                </div>
             </div>
-            <div v-else class="text-center text-muted" style="padding: 20px;" >
-                沒有資料
+            <br> -->
+    
+            <!-- <div class="row">
+                <div v-if="!isNoData" class="col-lg-3 col-md-6" style="height: 500px;" v-for="movie in movies" :key="movie.id">
+                    <MovieCard :item="movie" @open-update="openModal" @delete="callRemove">
+                    </MovieCard>
+                </div>
+                <div v-else class="text-center text-muted" style="padding: 20px;" >
+                    沒有資料
+                </div>
             </div>
-        </div>
-        <br>
-
-
-        <MovieModal ref="movieModalRef" v-model:movie="movie"
-            :is-show-insert-button="isShowInsertButton" @insert="callCreate" @update="callModify">
-        </MovieModal>
+            <br>
+     -->
+    
+            <MovieModal ref="movieModalRef" v-model:movie="movie"
+                :is-show-insert-button="isShowInsertButton" @insert="callCreate" @update="callModify">
+            </MovieModal>
+    </div>
 </template>
     
 <script setup>
@@ -272,6 +330,58 @@
 
 </script>
     
-<style>
-    
+<style scoped>
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+h3{
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+    .main{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .row-top{
+        display: flex;
+        justify-content: center;
+    }
+    .insert{
+        margin-right: 20px;
+    }
+    .card-outer{
+        /* width: 1300px; */
+        margin-top: 60px;
+        height: auto;
+    }
+    .sl-outer{
+        position: relative;
+    }
+    .sl{
+        position: absolute;
+        top:-35px;
+        right: 0px;
+        width: auto;
+        margin: 0;
+    }
+    .pages{
+        margin-bottom: 10px;
+    }
+    .center{
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .movie-sec{
+        display: flex;
+        flex-wrap: wrap;
+        padding: 20px 50px 20px 50px;
+        gap: 30px;
+    }
+
 </style>

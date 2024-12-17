@@ -261,6 +261,7 @@ function resetCinemaSubPhotoKey() {
             if (!fileInput.value) {
                 console.error("fileInput reference is not initialized.");
             }
+            console.log("refExampleModal.valuek",refExampleModal.value);
             modal.value = new bootstrap.Modal(refExampleModal.value);
         });
         const modalElement = refExampleModal.value;

@@ -11,7 +11,10 @@
                     <div class="modal-body">
                         <div class="version-box">
                             <div v-for="version in versions" :key="version.id">
-                                <button class="oneVersion" v-if="!isSelect(version)" @click="chooseVersion(version)">{{ version.version }}</button>
+                                <div v-if="!isSelect(version)">
+
+                                    <button class="oneVersion"  @click="chooseVersion(version)">{{ version.version }}</button>
+                                </div>
                             </div>
                         </div>
                         <hr v-if="selectVersions.length != 0">
@@ -104,7 +107,7 @@ defineExpose({
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* 控制按钮之间的间距 */
+    /* gap: 10px; 控制按钮之间的间距 */
     justify-content: flex-start;
 
 }

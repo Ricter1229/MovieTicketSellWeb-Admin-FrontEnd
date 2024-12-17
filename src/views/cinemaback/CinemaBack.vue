@@ -64,7 +64,7 @@
         <tbody class="main_tbody">
 
 <!-- td -->
-            <CinemaStoresFind v-for="cinema in cinemas" :key="cinema.storeId" :item="cinema" @open-update="openModal" @delete="callRemove"></CinemaStoresFind>
+            <CinemaStoresFind v-for="cinema in cinemas" :key="cinema.storeId" :item="cinema" @seats="openSeatModal" @open-update="openModal" @delete="callRemove"></CinemaStoresFind>
         </tbody>
     </table>
     <section class="pagi">
@@ -73,6 +73,7 @@
         </Paginate>
     </section>
                 <CinemaModal ref="cinemaModalRef" v-model:cinema="cinema" :is-show-insert-button="isShowInsertButton" @insert="callCreate" @update="callModify" :current="current" @find="callFind(current)"></CinemaModal>
+                <InsertSeatingList ref="insertSeatingListRef" v-model:cinema="cinema"  @find="callFind(current)"></InsertSeatingList>
             </section>
         </main>
     </section>
@@ -82,6 +83,7 @@
     import CinemaSearch from './CinemaSearch.vue';
     import CinemaStoresFind from './CinemaStoresFind.vue';
     import CinemaModal from './CinemaModal.vue';
+    import InsertSeatingList from '@/components/InsertSeatingList.vue';
     import Swal from 'sweetalert2';
     import axios from 'axios';
     import { ref,onMounted } from 'vue';
@@ -91,6 +93,7 @@
     });
     const isShowInsertButton=ref(true);
     const cinemaModalRef=ref(null);
+    const insertSeatingListRef=ref(null);
     const regionFilter=ref("");
     const regions=ref([]);
     
@@ -118,7 +121,19 @@
         }
         cinemaModalRef.value.showModal();
     }
-    
+    function openSeatModal(storeId){
+        
+            console.log("123:"+storeId);
+            callFindById(storeId);
+            console.log(cinema.value);
+            console.log(cinemas.value[storeId]);
+
+            // callFindById(id);
+
+        
+            insertSeatingListRef.value.showModal();
+    }
+
     function regionChoose(regionNum){
         // console.log("數字");
         console.log("regionNum",regionNum);

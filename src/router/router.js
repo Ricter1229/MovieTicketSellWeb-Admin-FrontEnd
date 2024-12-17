@@ -6,7 +6,7 @@ import Forbidden from "@/views/Forbidden.vue";
 
 // user
 import Register from "@/views/secure/Register.vue";
-
+import Admin from "@/views/admin/Admin.vue";
 import Login from "@/views/secure/Login.vue";
 import ResetPassword from "@/views/secure/ResetPassword.vue";
 
@@ -28,6 +28,12 @@ import TheWelcome from '../components/TheWelcome.vue'
 
 import Test from "@/views/cinemaback/Test.vue";
 
+//行程表
+import MovieCalender from "@/views/movie/MovieCalender.vue";
+import MovieWithStore from "@/views/movie/MovieWithStore.vue";
+
+
+
 const routes = [
     { path: "/test", name: "test", component: Test },
 // temp
@@ -38,7 +44,6 @@ const routes = [
     { path: "/:pathMatch(.*)", name: "notfound-link", component: NotFound },
     { path: "/403", name: "forbidden-link", component: Forbidden },
 
-    { path: "/secure/register", name: "register-link", component: Register },
     { path: "/admin", name: "admin-link", component: Admin },
     { path: "/secure/login", name: "login-link", component: Login },
     { path: '/secure/reset-password', name: 'reset-password', component: ResetPassword },
@@ -54,8 +59,9 @@ const routes = [
     {name:"schedule-link",path:'/schedule',component:CinemaMovieSchedule},
     {name:"ads-set-link",path:'/ads/set',component:CinemaAdsSet},
 
-
-   
+//schedule
+    {name:"calender-link",path:'/calender',component:MovieCalender},
+    {name:"movie-with-store-link",path:'/moviewithstore',component:MovieWithStore},
 ]
 
 export default createRouter({
